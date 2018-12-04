@@ -1,0 +1,915 @@
+= Arch Linux notebook: Minimal Installation Guide
+Bob McColly(c) 2018 Heart of Diamond GmbH
+Version 0.1, 30.10.2018
+// Set Attributes
+:sectnums:
+:toc: left
+:toclevels: 4
+:toc-title: Contents
+:experimental:
+:description: Digital version of Pink & White COPYBOOK
+:keywords: Arch Linux
+:imagesdir: ./img
+:stylesdir: ./stylesheets
+//:stylesheet: rubygems.css
+:source-highlighter: coderay
+// rouge coderay highlightjs prettify pigments
+:show-link-uri:
+
+This is a digital copy of a handwritten notebook.
+Useful for keeping notes about exact solutions
+for quick system installation and configuration.
+
+IMPORTANT: For more detailed instructions, see the ArchWiki
+https://wiki.archlinux.org/index.php/Installation_guide[Installation guide]
+
+== Pre-installation
+
+Download the installation medium and create an Arch Linux bootable USB drive.
+It should be done on some already working linux computer.
+To identify USB device, use `lsblk`
+
+.Using dd
+
+  # dd bs=4M if=/path/to/archlinux.iso of=/dev/sdx status=progress oflag=sync
+
+[TIP]
+====
+Run the following command, replacing `/dev/sdx` with your drive, e.g. `/dev/sdb`.
+(Do *not* append a partition number, so do *not* use something like `/dev/sdb1`)
+====
+
+Boot the installation medium.
+
+=== Partition the disks
+
+  # fdisk -l
+  # fdisk /dev/sda
+
+=== Format the partitions
+
+  # mkfs.ext4 /dev/sda1
+  # mkfs.ext4 /dev/sda2
+
+  # mkfswap /dev/sda3
+
+=== Mount the file systems
+
+  # mount /dev/sda2 /mnt
+  # mkdir /mnt/boot
+  # mount /dev/sda1 /mnt/boot
+
+== Installation
+=== Install the base packages
+
+  # pacstrap /mnt base
+
+== Configure the system
+=== Generate `fstab`
+
+  # genfstab -U /mnt >> /mnt/etc/fstab
+
+=== Change root into the new system
+
+  # arch-chroot /mnt
+
+=== Set Time zone
+[source,bash]
+----
+# ln -sf /usr/share/zoneinfo/Europe/Kiev /etc/localtime
+# timedatectl set-ntp true
+----
+
+To check the service status, use `timedatectl status`.
+
+=== Localization
+Uncomment `en_US.UTF-8 UTF-8` and `ru_RU.UTF-8 UTF-8` locales in `/etc/locale.gen`,
+and generate them with:
+
+  # locale-gen
+
+Set the `LANG` variable in `locale.conf` accordingly:
+
+  # echo LANG=en_US.UTF-8 > /etc/locale.conf
+
+=== Hostname
+Add matching entries to `/etc/hosts`:
+[subs=+quotes]
+// The "quotes" substitution enables inline formatting.
+----
+  127.0.0.1 localhost
+  ::1       localhost
+  *192.168.0.8* __myhostname__.localdomain  __myhostname__
+----
+A system's permanent ((((IP address)))) should be used instead of 192.168.0.8.
+
+=== Root password
+
+  # passwd
+
+=== Boot loader
+==== BIOS systems
+  # pacman -S grub
+  # grub-install --target=i386-pc /dev/sda
+
+  # vim /etc/default/grub
+    GRUB_CMDLINE_LINUX_DEFAULT=""
+
+.Revert to traditional interface names
+[NOTE]
+====
+*Arch Linux*
+----
+  GRUB_CMDLINE_LINUX_DEFAULT="net.ifnames=0"
+----
+
+*Ubuntu*
+----
+  GRUB_CMDLINE_LINUX_DEFAULT="net.ifnames=0 biosdevname=0"
+----
+====
+
+Generate grub config
+
+  # grub-mkconfig -o /boot/grub/grub.cfg
+
+==== Dual boot with Windows
+
++++ <details><summary> +++
+*[+]Example* of the `/etc/grub.d/40_custom`
++++ </summary><div> +++
+[source,bash]
+----
+include::snippets/etc/grub.d/40_custom[]
+----
+
+IMPORTANT: use disk UUID for setting Windows boot partition
+
+  ls -la /dev/disk/by-uuid/
+  ...
+  lrwxrwxrwx 1 root root  10 nov 3 20:35 064E47704E475817 -> ../../sdb1
+  ...
+
++++ </div></details> +++
+
+To change the default grub menu entry, you have to set variable `GRUB_DEFAULT`.
+It could be a name of menu entry or its number (starts from `0`).
+
+  # vim /etc/defaults/grub
+    GRUB_DEFAULT="Arch Linux"
+    ...or...
+    GRUB_DEFAULT=0
+
+Generate grub config
+
+  # grub-mkconfig -o /boot/grub/grub.cfg
+
+=== Reboot
+Exit the chroot environment by typing `exit` or pressing `Ctrl+D`.
+
+Optionally manually unmount all the partitions with `umount -R /mnt`:
+this allows noticing any "busy" partitions, and finding the cause with `fuser`.
+
+Finally, restart the machine by typing `reboot`:
+any partitions still mounted will be automatically unmounted by __systemd__.
+Remember to remove the installation media and then login into the new system
+with the root account.
+
+== Post-installation
+=== System administration
+==== Users
+.Add a new user
+[subs=+quotes]
+----
+  # useradd -m -s /bin/bash __bob__
+  # passwd __bob__
+----
+.Delete a user with mail and homedir
+  # userdel -r bob
+
+.Privilege escalation
+  # pacman -S sudo
+
+The configuration file for sudo is `/etc/sudoers`.
+It should *always* be edited with the `visudo` command.
+[subs=+quotes]
+----
+  # cat /etc/sudoers
+    ...
+    __bob__ ALL=(ALL) NOPASSWD: ALL
+    ...
+----
+==== Groups
+.Additional group
+[subs=+quotes]
+----
+  # usermod -aG __fuse__ bob
+----
+
+.How to check
+[NOTE]
+====
+List of all groups that user `bob` belongs
+----
+  $ groups bob
+----
+====
+
+=== Package management
+==== pacman & yaourt
+To be able to build from the AUR, you have to instal `base-devel` packages
+
+  $ sudo pacman -S binutils git base-devel
+
+  $ cd /opt
+  $ git clone https://aur.archlinux.org/package-query.git
+  $ cd package-query
+  $ makepkg -si
+
+  $ cd ..
+  $ git clone https://aur.archlinux.org/yaourt.git
+  # cd /opt/yaourt && makepkg -si
+
+=== Graphical user interface
+==== Display drivers
+.Discover hardware
+  $ lspci | grep VGA
+
+.Find open source drivers
+  # pacman -Ss | grep xf86-video
+
+.Install driver
+  # pacman -S xf86-video-ati
+
+.How to check
+  # pacman -Qi xf86-video-ati
+  # lsmod | grep radon
+  # lspci | grep VGA
+
+==== Xorg Display server
+[source,bash]
+----
+# lspci | grep -e VGA -e 3D
+# pacman -S xorg-server   \
+            xorg-xinit    \
+            xorg-xfontsel \
+            xorg-xlsfonts \
+            xorg-xsetroot \ # background color
+            xorg-xdpyinfo   # screen dimensions
+$ echo "exec i3" > .xprofile
+
+$ startx
+----
+
+.Check screen dimensions
+  $ xdpyinfo | grep "dimensions"
+    screen#0: dimensions: 1366x768
+
+==== Tiling Windows Manager
+Implementation example: https://eax.me/i3wm/
+
+Keyboard layout indicator in i3wm: https://codingunicorns.com/blog/2016/09/30/Language-indicator-in-i3wm/
+
+.Installing a tiling window manager
+  # pacman -S i3 i3blocks i3lock dmenu
+
+.Install program to set/get the current XKB keyboard layout
+    $ git clone https://github.com/nonpop/xkblayout-state.git
+    $ cd xkblayout-state
+    $ make
+    $ chmod +x xkblayout-state
+    $ cp xkblayout-state /usr/local/bin/
+
+.Setting wallpapers
+  # pacman -S nitrogen
+
++++ <details><summary> +++
+*[+]Example* of `~/.config/i3/config` configuration file
++++ </summary><div> +++
+----
+include::snippets/home/bob/.config/i3/config[]
+----
++++ </div></details> +++
+
++++ <details><summary> +++
+*[+]Example* of `~/.i3blocks.conf` configuration file
++++ </summary><div> +++
+----
+include::snippets/home/bob/.i3blocks.conf[]
+----
++++ </div></details> +++
+
++++ <details><summary> +++
+*[+]Example* "blocklet" `/usr/lib/i3blocks/layswitch`
+which will update layout indicator in statusbar
++++ </summary><div> +++
+----
+include::snippets/usr/lib/i3blocks/layswitch[]
+----
++++ </div></details> +++
+
+=== Multimedia
+==== Sound
+
+  # pacman -S alsa-utils
+  $ alsamixer
+  $ alsactl store -f .asound.state
+
+Add line to `~/.bash_profile`:
+----
+  $ cat ~/.bash_profile
+    ...
+    ## Restore ALSA Mixer settings at login
+    alsactl -f ~/.asound.state restore
+    ...
+----
+==== Music
+
+  $ sudo pacman -S mpd
+
++++ <details><summary> +++
+*[+]Example* get directory `~.config/mpd` from archive
++++ </summary><div> +++
+----
+-rwxrwxrwx 1 bob users  19173 июн 17  2017 database
+-rwxrwxrwx 1 bob users 340380 авг  9  2017 log
+-rwxrwxrwx 1 bob users      4 авг  9  2017 pid
+drwxrwxrwx 1 bob users      0 фев 27  2017 playlists
+-rwxrwxrwx 1 bob users   1007 авг  9  2017 state
+-rwxrwxrwx 1 bob users      0 янв  5  2016 sticker.sql
+----
++++ </div></details> +++
+
++++ <details><summary> +++
+*[+]Example* get config `~.mpdconf` from archive
++++ </summary><div> +++
+----
+include::snippets/home/bob/.mpdconf[]
+----
++++ </div></details> +++
+
+  $ mkdir ~/Music
+
+Add line to `~/.bash_profile`:
+----
+  $ cat ~/.bash_profile
+    ...
+    # MPD daemon start (if no other user instance exists)
+    [ ! -s ~/.config/mpd/pid ] && mpd
+    ...
+----
+
+  $ sudo pacman -S ncmpcpp
+
++++ <details><summary> +++
+*[+]Example* get config `~.ncmpcpp/config` from archive
++++ </summary><div> +++
+----
+include::snippets/home/bob/.ncmpcpp/config[]
+----
++++ </div></details> +++
+
+=== Networking
+.Show kernel drivers handling each device
+  # lspci -k
+
+==== DNS
+
+.Add dedicated DNS server
+  $ echo "nameserver 1.2.3.4" | sudo tee -a /etc/resolve.conf
+
+.DNS lookup
+[TIP]
+====
+`drill` (from `ldns` package)
+
+`dig`,`host`,`nslookup` (from `bind-tools` package)
+====
+
+==== Routing table
+.List routes:
+  $ ip route show
+
+.Add a route:
+  # ip route add 172.16.99.0/24 dev enp4s0
+
+.Delete a route:
+  # ip route del 172.16.99.0/24 dev enp4s0
+
+  # route del default gw 10.0.1.1
+
+==== MAC address
+  # ip link set dev enp3s0 address 18:67:b0:25:a3:dd
+
+==== Wireless (dhcp, static IP)
+.Activate the interface
+[subs=+quotes]
+// The "quotes" substitution enables inline formatting.
+----
+$ sudo iw dev
+$ sudo ip link set __wlp2s0__ up
+$ sudo wpa_supplicant -B -i __wlp2s0__ -c /etc/wpa_supplicant/wifi.conf
+
+*DHCP connection*
+$ sudo dhcpcd __wlp2s0__  # ... or (-k, --release [interface])
+
+*or Static IP configuration*
+$ sudo ip addr 192.168.100.87/24 broadcast 192.168.100.255 dev __wlp2s0__
+$ sudo ip route add default via 192.168.100.1
+
+$ ping -c3 i.ua
+----
+
++++ <details><summary> +++
+*[+]Example* of `/etc/wpa_supplicant/wifi.conf` config
++++ </summary><div> +++
+----
+include::snippets/etc/wpa_supplicant/wifi.conf[]
+----
++++ </div></details> +++
+
+.Delete an IP address from an interface:
+[TIP]
+====
+----
+# ip addr flush dev wlp2s0
+# ip route flush dev wlp2s0
+----
+====
+
+.Rfkill caveat
+
+  # pacman -S rfkill
+
+Many laptops have a hardware button (or switch) to turn off wireless card, however, the card can also be blocked by kernel. This can be handled by rfkill. To show the current status:
+
+----
+# rfkill list
+
+0: phy0: Wireless LAN
+    Soft blocked: yes
+        Hard blocked: yes
+----
+If the card is hard-blocked, use the hardware button (switch) to unblock it.
+If the card is not hard-blocked but soft-blocked, use the following command:
+
+  # rfkill unblock wifi
+
+Hardware buttons to toggle wireless cards are handled by a vendor specific kernel module, frequently these are WMI modules.
+
+  # echo "blacklist wmi" > /etc/modprobe.d/sony.conf
+  # reboot
+  # rfkill unblock wifi
+
+.Useful info about wireless device
+[TIP]
+[source,bash]
+----
+# iw dev                    # get the name of a wireless interface
+# iw dev wlp2s0 link        # check link status
+# iw dev wlp2s0 scan | less # discover access points
+# ip link show wlp2s0       # verify that the interface is up
+----
+
+==== Wired (network profile)
+
+.Network manager
+NOTE: `netctl` is part of the `base` group, so it should already be installed on your system.
+
+  # cp /etc/netctl/examples/ethernet-static /etc/netctl/
+
++++ <details><summary> +++
+*[+]Example* of `/etc/netctl/ethernet-static` profile
++++ </summary><div> +++
+----
+include::snippets/etc/netctl/ethernet-static[]
+----
++++ </div></details> +++
+
+.Starting and Enabling a profile
+
+  # netctl start/enable ethernet-static
+
+==== QEMU/KVM Bridged Network with TAP interfaces
+URI: https://blog.elastocloud.org/2015/07/qemukvm-bridged-network-with-tap.html
+
+Start by creating a bridge on the hypervisor system:
+
+  $ sudo ip link add br0 type bridge
+
+Clear the IP address on the network interface that you'll be bridging (e.g. eth0).
+
+NOTE: This will disable network traffic on eth0!
+
+  $ sudo ip addr flush dev eth0
+
+Add the interface to the bridge:
+
+  $ sudo ip link set eth0 master br0
+
+Next up, create a TAP interface:
+
+  $ sudo ip tuntap add dev tap0 mode tap user $(whoami)
+
+The user parameter ensures that the current user will be able to connect to the TAP interface.
+
+Add the TAP interface to the bridge:
+
+  $ sudo ip link set tap0 master br0
+
+Make sure everything is up:
+
+  $ sudo ip link set dev br0 up
+  $ sudo ip link set dev tap0 up
+
+.Bridge with netctl
++++ <details><summary> +++
+*[+]Example* of `/etc/netctl/tuntap` profile
++++ </summary><div> +++
+----
+include::snippets/etc/netctl/tuntap[]
+----
++++ </div></details> +++
+
+  $ sudo netctl start/enable tuntap
+
+==== Loopback
+
+  # ip addr add 192.168.99.99/24 broadcast 192.168.99.255 dev lo
+
+=== Input devices
+==== Keyboard layouts
+See <<_tiling_windows_manager>>.
+
+=== Printer
+
+  # pacman -S cups cups-pdf
+  # systemctl [enable/start] org.cups.cupsd.service
+
+Use web browser to set default printer
+
+  http://localhost:631
+
+.Usage
+[subs=+quotes]
+----
+  $ lpr __filename__
+----
+
+.How to check for status
+
+  $ lpstat -s
+
+=== Appearance
+==== Fonts
+
+.Cyrilic Font for text terminal
+----
+# cat /etc/vconsole.conf
+  KEYMAP=ru
+  FONT=cyr-sun16
+----
+
+.TTS fonts for graphical terminal
+* It's posible to use Windows fonts if you have maped partition with that OS:
+
+  # ln -s /media/win7/Windows/Fonts/ /usr/share/fonts/WindowsFonts
+
+NOTE: Don't add `/` in the end of destination
+
+* You can also install legacy fonts from AUR:
+
+  $ yaourt -S ttf-ms-fonts
+
+* Install perfect monospace font for graphical terminal:
+
+  $ yaourt -S ttf-inconsolata-lgc-for-powerline
+
+[IMPORTANT]
+====
+`fc-cache` must be executed to generate customized font information.
+----
+# fc-cache -rv
+----
+*Example* how to handle some error:
+----
+$ sudo rm /etc/fonts/conf.d/10-scale-bitmap-fonts.conf
+$ sudo fc-cache -fv
+----
+
+====
+
+.How to check
+
+Search for `arial` fonts
+
+----
+$ fc-match arial
+----
+
+==== GTK+
+
+  $ sudo pacman -S gtk2 lxappearance
+
+.Download theme
+  $ yaourt -S gtk2-theme-dust
+  $ sudo pacman -S faenza-icon-theme
+
+.How to check
+  $ cat ~/.gtkrc-2.0
+    include "/home/bob/.gtkrc-2.0.mine"
+
+.Get from Backup
+[TIP]
+====
+*Don't forget to backup configuration files*
+
+If you have working linux box, it's easy to fetch "polished" config:
+
+[source,bash]
+----
+  $ scp bob@192.168.1.32:/home/bob/.gtkrc-2.0.mine .
+----
+====
+
++++ <details><summary> +++
+*[+]Example* `~/.gtkrc-2.0` in home dir
++++ </summary><div> +++
+[source,bash]
+----
+include::snippets/home/bob/.gtkrc-2.0[]
+----
++++ </div></details> +++
+
++++ <details><summary> +++
+*[+]Example* `~/.gtkrc-2.0.mine` in home dir
++++ </summary><div> +++
+[source,bash]
+----
+include::snippets/home/bob/.gtkrc-2.0.mine[]
+----
++++ </div></details> +++
+
+==== Qt
+
+  $ sudo pacman -S qt4
+  $ qtconfig -qt4
+
+TIP: Set interface stile `GTK+` (it makes better appearence for `Keepassx`)
+
+=== Console improvements
+==== Bash command-line shell
+.Tab completion
+----
+  # vim /etc/bash.bashrc
+
+    complete -cf sudo
+    complete -cf man
+----
+
+.History completion
+----
+  # vim /etc/bash.bashrc
+
+    bind '"\e[A": history-search-backward'
+    bind '"\e[B": history-search-forward'
+----
+
+==== Colored output
+Colored `ls`, `diff`, `grep`, etc.
+
+  # pacman -S colordiff
+
+.Example in `.bashrc`
+  alias diff='colordiff'              # requires colordiff package
+  alias ls='ls -hF --color=auto'
+  alias grep='grep --color=auto'
+
+.Example in `.bash_profile`
+  eval `dircolors ~/.dircolors.d/dircolors.ansi-dark`
+
++++ <details><summary> +++
+*[+]Example* Solarized dark dircolors config
++++ </summary><div> +++
+[source,bash]
+----
+include::snippets/home/bob/.dircolors.d/dircolors.ansi-dark[]
+----
++++ </div></details> +++
+
+==== Graphical terminal
+
+  # pacman -S rxvt-unicode \
+              gtk2-perl    \
+              urxvt-perls
+
+.Allow use `#include` directives in `.Xresources`
+  $ sudo pacman -S gcc
+
+==== Session management
+
+.Terminal multiplexer `tmux`
+
+  # pacman -S tmux
+
++++ <details><summary> +++
+*[+]Example* Copy file `.tmux.conf` from backup to home dir
++++ </summary><div> +++
+[source,bash]
+----
+include::snippets/home/bob/.tmux.conf[]
+----
++++ </div></details> +++
+
+If terminal supports *truecolour* (16M), you have to add:
+
+.Into `.tmux.conf`
+      set -ga terminal-overrides ",xterm-256color:Tc"
+
+.Into `.bashrc`
+    export COLORTERM=truecolor
+
+Download simple tmux statusline generator with support for powerline symbols
+from https://github.com/edkolev/tmuxline.vim
+
+[NOTE]
+====
+// Cross reference link
+Don't forget to install font with powerline symbols support. See <<_fonts>>
+====
+
++++ <details><summary> +++
+*[+]Example* `.tmuxpwline` in home dir
++++ </summary><div> +++
+[source,bash]
+----
+include::snippets/home/bob/.tmuxpwline[]
+----
++++ </div></details> +++
+
+== Services
+=== TFTP
+.Install
+  # pacman -S atftp
+  # systemctl start/enable atftp.service
+
+.Check
+  # cat /etc/conf.d/atftpd
+  # ls -la /srv/atftpd
+  # systemctl status atftpd.service
+
+=== OpenSSH
+.Install
+  # pacman -s openssh
+  # systemctl enable/start sshd
+
+[IMPORTANT]
+====
+----
+$ chmod 700 ~/
+$ chmod 700 ~/.ssh
+$ chmod 600 ~/.ssh/*
+----
+====
+
+.Generating an SSH key pair:
+  $ ssh-keygen
+
+.Copying the *public* key to the remote server
+  $ ssh-copy-id username@remote-srv.org
+
+or, manual method:
+
+  # cat /home/bob/.ssh/id_rsa.pub | ssh -p 25000 root@vsmon "cat - >> ~/.ssh/authorized_keys"
+
++++ <details><summary> +++
+*[+]Example* `~/.ssh/config` from archive
++++ </summary><div> +++
+[source,bash]
+----
+include::snippets/home/bob/.ssh/config[]
+----
++++ </div></details> +++
+
+.Run command on remote server
+*Sutdown On LAN* (opposite to WakeOnLAN)
+
+  # ssh root@192.168.100.99 poweroff
+
+=== RTorrent
+  # pacman -S rtorrent
+
++++ <details><summary> +++
+*[+]Example* `~/.rtorrent.rc` from archive
++++ </summary><div> +++
+[source,bash]
+----
+include::snippets/home/bob/.rtorrent.rc[]
+----
++++ </div></details> +++
+
+  $ mkdir $HOME/{torrents,watch,.session}
+
++++ <details><summary> +++
+*[+]Example* `/etc/systemd/user/rt.service` from archive
++++ </summary><div> +++
+[source,bash]
+----
+include::snippets/etc/systemd/user/rt.service[]
+----
++++ </div></details> +++
+
+----
+$ mkdir ~/.config/systemd/user/default.target.wants
+$ ln -s /etc/systemd/user/rt.service ~/.config/systemd/user/default.target.wants
+
+$ ls -la ~/.config/systemd/user/default.target.wants/
+  lrwxrwxrwx 1 bob bob   28 мар 26  2017 rt.service -> /etc/systemd/user/rt.service
+
+$ systemctl --user start/enable rt.service
+----
+
+*Attach* to `rtorrent` session:
+
+  $ tmux attach -t rt
+
+*Detach* from session:
+
+  Ctrl-a d
+
+=== HTTP server
+==== WebDAV
+
+=== SNMPd
+
+== Appendix
+=== GIT Source control system
+[TIP]
+====
+If you work in Linux with `dos` files, you have to add global parameter
+----
+  $ git config --global core.autocrlf false
+----
+====
+
+[subs=+quotes]
+// The "quotes" substitution enables inline formatting.
+----
+$ *cd /media/data/data/howto/paw/*
+$ *git init*
+Initialized empty Git repository in /media/data/data/howto/paw/.git/
+$ *git add paw.adoc*
+$ *git commit -m "initial commit"*
+[master (root commit) cb0de4c] initial commit
+ 1 file changed, 662 insertions(+)
+  create mode 100644 paw.adoc
+----
+
+=== Usage `echo` with `sudo`
+  $ echo -e "<config>\n</config>" | sudo tee /etc/vmware/hostd/proxy.xml
+
+=== Python `pip`
+NOTE: This solution is for *Ubuntu*
+
+----
+$ sudo apt-get install python-pip
+$ pip -V
+$ pip install --upgrade pip
+$ pip list --format=columns
+$ pip show p4python  # shows if package is installed
+----
+
+=== JAVA
+TIP: 'AsItHappens' - network monitoring system on java
+
+Add string into `.bashrc`:
+
+----
+export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel'
+----
+
+Install *OpenJDK8*
+
+----
+# pacman -S jre8-openjdk-headless
+----
+
+NOTE: Check also `/etc/profile`
+
+=== COPY with progress bar
+  $ sudo pacman -S rsync
+  $ rsync -avP <source> <destination>
+
+=== Connecting to Serial Consoles
+
+  # pacman -S uucp  # Unix to Unix copy
+
+__Example__: **c**all **u**p another system
+[subs=+quotes]
+----
+$ sudo *cu* -l /dev/ttyUSB0 -s 9600 2>&1 | tee cisco.log
+----
+
+`~#` - send __Ctrl+Break__
+
+`!.`&crarr; - terminate the conversation
