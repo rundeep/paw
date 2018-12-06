@@ -52,6 +52,7 @@ Boot the installation medium.
   # mkfs.ext4 /dev/sda2
 
   # mkfswap /dev/sda3
+  # swapon  /dev/sda3
 
 === Mount the file systems
 
