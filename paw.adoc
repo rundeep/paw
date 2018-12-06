@@ -846,6 +846,11 @@ $ systemctl --user start/enable rt.service
 === SNMPd
 
 == Appendix
+=== LOG
+All logs from current boot
+
+  $ journalctl -b
+
 === GIT Source control system
 [TIP]
 ====
