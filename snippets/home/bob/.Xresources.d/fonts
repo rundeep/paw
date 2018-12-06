@@ -1,0 +1,18 @@
+!-----------------------------------------------------------------------------
+! Xft settings
+
+Xft.dpi:        96
+Xft.antialias:  true
+Xft.rgba:       rgb
+Xft.hinting:    true
+Xft.hintstyle:  hintslight
+!# Anti-liasing
+Xft.lcdfilter           : lcddefault
+
+! FONT Using Xft
+*font                   : xft:Inconsolata LGC for Powerline:style=Medium:pixelsize=14
+*italicFont             : xft:Inconsolata LGC for Powerline:style=Italic:pixelsize=14
+*bolditalicFont         : xft:Inconsolata LGC for Powerline:style=Bold-Italic:pixelsize=14
+*boldFont               : xft:Inconsolata LGC for Powerline:style=Bold:pixelsize=14
+*letterSpace            : -1
+

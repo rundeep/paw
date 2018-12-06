@@ -1,0 +1,6 @@
+** Message: Remote error from secret service: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.secrets was not provided by any .service files
+** Message: Remote error from secret service: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.secrets was not provided by any .service files
+[6466:0731/162307.242068:ERROR:audio_send_stream.cc(93)] Failed to set up send codec state.
+[6466:0731/162318.963824:ERROR:port.cc(420)] Jingle:Port[0x326a349c400:audio:1:0:local:Net[wlp2s0:192.168.1.x/24:Wifi]]: Received STUN request with bad M-I from 192.168.1.x:64356, password_=jianHh5PYlEYbEQXqu7sfKYw
+[6466:0731/162318.964855:ERROR:port.cc(420)] Jingle:Port[0x326a349c400:audio:1:0:local:Net[wlp2s0:192.168.1.x/24:Wifi]]: Received STUN request with bad M-I from 192.168.1.x:49980, password_=jianHh5PYlEYbEQXqu7sfKYw
+[OpenH264] this = 0x0x326a3330030, Warning:Actual input framerate fAverageFrameRate = 0.000000 is quite different from framerate in setting 60.000000, please check setting or timestamp unit (ms), start_Ts = 3710496204261

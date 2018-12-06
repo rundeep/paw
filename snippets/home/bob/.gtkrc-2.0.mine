@@ -1,0 +1,32 @@
+#include "/home/bob/.gtkrc-2.0.mine"
+
+# gVim will fill the non-functional area with the GTK theme background color
+style "vimfix" {
+  bg[NORMAL] = "#242424" # this matches my gVim theme 'Normal' bg color.
+}
+widget "vim-main-window.*GtkForm" style "vimfix"
+
+# ZIM: set the font used in the index
+style "zim-pageindex-style"
+{
+  font_name = "Sans 8"
+}
+widget "*.zim-pageindex" style "zim-pageindex-style"
+
+# ZIM: make the treeview a bit more compact
+style "gtkcompact"
+{
+  GtkTreeView::vertical-separator=0
+  GtkTreeView::horizontal-separator=0
+  GtkTreeView::expander-size=6
+  GtkTreeView::fixed-height-mode=TRUE
+  GtkWidget::focus_padding=0
+}
+class "GtkWidget" style "gtkcompact"
+
+# ZIM: customize TreeView
+style "mystyle"
+{
+  base[ACTIVE] = "#333333"
+}
+class "GtkTreeView" style "mystyle"

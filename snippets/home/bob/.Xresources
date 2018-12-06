@@ -1,0 +1,12 @@
+! To reread your .Xresources file, and throw away your old resources, you can type:
+! xrdb ~/.Xresources
+!
+! Include files.
+! Note: You need to have a C preprocessor, such as GNU CPP, installed to use this functionality.
+! $ pacman -S gcc
+!
+!#include ".Xresources.d/solarized.light"
+#include ".Xresources.d/fonts"
+#include ".Xresources.d/rxvt-unicode"
+#include ".Xresources.d/xterm"
+!#include ".Xresources.d/XTerm"

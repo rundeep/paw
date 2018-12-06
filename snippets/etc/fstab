@@ -1,0 +1,19 @@
+# 
+# /etc/fstab: static file system information
+#
+# <file system>	<dir>	<type>	<options>	<dump>	<pass>
+
+# /dev/sda6
+UUID=96fd2072-b013-4c67-874c-e2e11dc2fd53	/         	ext4      	rw,relatime,data=ordered	0 1
+
+# /dev/sda5
+UUID=24739610-23bd-4a12-913a-9d7cc11668d2	none      	swap      	defaults  	0 0
+
+#/dev/sda2: UUID="FE1857AE185764A5" TYPE="ntfs" PARTUUID="dd70632f-02"
+UUID=FE1857AE185764A5				/media/win7	ntfs-3g		root,uid=1000,gid=users 0 0
+
+# /dev/sda3: LABEL="Data" UUID="1CAE7CB3AE7C86D4" TYPE="ntfs" PARTUUID="dd70632f-03"
+UUID=1CAE7CB3AE7C86D4				/media/data	ntfs-3g		root,uid=1000,gid=users	0 0
+
+#UUID=5D75F7887F1E2A43				/media/music	ntfs-3g		root,uid=1000,gid=users 0 0
+

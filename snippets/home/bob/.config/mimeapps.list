@@ -1,0 +1,17 @@
+[Added Associations]
+video/x-msvideo=mpv.desktop;
+application/pdf=evince.desktop;mupdf.desktop;
+image/png=mupdf.desktop;
+video/mp4=mpv.desktop;
+image/vnd.djvu+multipage=zathura-djvu.desktop;
+video/x-flv=mpv.desktop;
+video/x-matroska=mpv.desktop;
+audio/x-ms-wma=mpv.desktop;
+image/jpeg=ida.desktop;feh.desktop;mupdf.desktop;mirage.desktop;
+video/mpeg=mpv.desktop;
+text/html=firefox.desktop;
+text/vnd.trolltech.linguist=mpv.desktop;
+
+[Default Applications]
+image/jpeg=mirage.desktop
+text/vnd.trolltech.linguist=mpv.desktop

@@ -1,0 +1,38 @@
+# 
+# /etc/fstab: static file system information
+#
+# <file system>					<dir>		<type>		<options>			<dump>	<pass>
+# /dev/sda2
+UUID=fcea5d1e-2c87-44eb-ac40-0ffa157f2967	/         	ext4      	rw,relatime,data=ordered	0 1
+
+# /dev/sda1
+UUID=d969b65b-1590-46dc-b3c1-99b6ac84ee9e	/boot     	ext3      	rw,relatime,data=ordered	0 2
+
+# /dev/sda3
+UUID=b767d8bd-8b8e-4b0e-a527-c9810aeb6bfb	none      	swap      	defaults  			0 0
+
+# /dev/sdc1: 
+UUID=b96520fd-17fb-49b1-8d30-e938e065c29d 	/media/sdc1 	ext4      	rw,relatime,data=ordered	0 1
+
+# /dev/sdb1: 
+#UUID=867E10077E0FEEAD 				/media/sdb1	ntfs-3g		root,uid=1000,gid=users		0 0
+###UUID=cfe8e084-922d-4a06-afec-03e164c3f1cf       /media/sdb1     ext4      	rw,relatime,data=ordered	0 1
+UUID=a2626af8-31d5-4ff0-b88f-7f115c2ea184	/media/sdb1	ext4      	rw,relatime,data=ordered	0 1
+
+# /dev/sdd1: 
+#UUID=B29815A798156ADD  			/media/sdd1	ntfs-3g		root,uid=1000,gid=users		0 0
+UUID=15170c17-4623-483f-b143-2d97600c4840       /media/sdd1     ext4      	rw,relatime,data=ordered	0 1
+
+#/dev/sda5:
+#UUID="c92e99c5-b997-488d-96f4-69b8e4f5885c" 	/media/sda5	ext3      	rw,relatime,data=ordered	0 1
+
+# PXE images
+/media/iso/archlinux-2017.10.01-x86_64.iso	/mnt/archiso	iso9660		loop	0	0
+
+
+# Binding for WebDAV
+/media/sdb1/LearnWare/		/home/httpd/html/dav/learnware/		none	bind	0	0
+/media/sdc1/video/tv/		/home/httpd/html/dav/tv/		none	bind	0	0
+/media/sdb1/install/		/home/httpd/html/dav/install/		none	bind	0	0
+/media/sdb1/library/		/home/httpd/html/dav/library/		none	bind	0	0
+/media/sdd1/video/cinema/	/home/httpd/html/dav/cinema/		none	bind	0	0

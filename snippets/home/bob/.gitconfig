@@ -1,0 +1,17 @@
+[core]
+	editor = vim
+	autocrlf = input
+	safecrlf = true
+[user]
+	name = rundeep
+	email = bohdan.sokorenko@gmail.com
+[color]
+	ui = true
+[diff]
+	tool = vimdiff
+[merge]
+	tool = vimdiff
+[mergetool]
+	prompt = false
+[difftool]
+	prompt = false

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+LNG=$(xkblayout-state print %s | awk '{print toupper($0)}')
+case $LNG in
+  "US")
+    CLR=\#00FF00 ;; # green
+  "RU")
+    CLR=\#FF0000 ;; # red
+  *)
+    CLR=\#FFFF00 ;; # all others default-yellow
+esac
+echo "$LNG"
+echo "$LNG"
+echo "$CLR"

@@ -1,0 +1,114 @@
+!-----------------------------------------------------------------------------
+! XTerm
+! http://www.futurile.net/2016/06/14/xterm-setup-and-truetype-font-configuration/
+!-----------------------------------------------------------------------------
+
+!XTerm*termName		: xterm-256color
+XTerm*locale		: true
+XTerm*backarrowKey	: false
+XTerm*ttyModes		: erase ^?
+XTerm*VT100.geometry	: 128x32
+
+! --- Setting a font
+!XTerm*background	: Black
+XTerm*faceName          : Inconsolata LGC
+XTerm*faceSize		: 10
+!XTerm*foreground	: grey
+XTerm*renderFont	: true
+!XTerm*font		: fixed
+!XTerm*boldFont		: fixed
+
+! --- Font menu sizes
+! VT Font Menu: Unreadable
+XTerm*facesize1		: 8
+! VT Font Menu: Tiny
+XTerm*facesize2		: 10
+! VT Font Menu: Medium
+XTerm*facesize3		: 12
+! VT Font Menu: Large
+XTerm*facesize4		: 16
+! VT Font Menu: Huge
+XTerm*facesize5		: 22
+
+! --- Use <Ctrl>++ to make the font bigger,
+! --- <Ctrl>- to shrink it and <Ctrl>0 to reset it.
+XTerm*VT100.Translations: #override \
+  Ctrl<Key>minus: smaller-vt-font() \n\
+  Ctrl<Key>plus: larger-vt-font() \n\
+  Ctrl<Key>0: set-vt-font(d)
+
+! --- Cut and paste
+XTerm*VT100.Translations: #override \
+  Shift <KeyPress> Insert: insert-selection(CLIPBOARD) \n\
+  Ctrl Shift <Key>V: insert-selection(CLIPBOARD) \n\
+  Ctrl Shift <Key>C: copy-selection(CLIPBOARD) \n\
+  Ctrl <Btn1Up>: exec-formatted("xdg-open '%t':, PRIMARY)
+
+! --- Selecting text
+! Only select text
+XTerm*highlightSelection	: true
+! Remove trailing spaces
+XTerm*trimSelection		: true
+
+! -- Scrolling
+! Lines of output that you can scroll back over
+XTerm*saveLines		: 4096
+! Turn the scrollbar on, and put it on the right
+XTerm*scrollBar		: true
+XTerm*rightScrollBar	: true
+! Do not scroll when there is new input e.g. tail -f /var/syslog
+XTerm*scrollTtyOutput	: false
+
+! -----------------------------------------------------------------
+XTerm.VT100.translations: #override \
+	<Key>F12:		keymap(other) \n\
+	<Key>F1:		string("an email address") \n\
+	<Key>F2:		string("another email address") \n\
+	None<Key>F8:		string("LD_LIBRARY_PATH") \n\
+	Meta<Key>F8:		string("LC_CTYPE") \n\
+	Ctrl<Key>F8:		string("XUSERFILESEARCHPATH") \n\
+	Shift<Key>F8:		string("DISPLAY") \n\
+ \
+	Ctrl<Key>Left:		string(0x1b) string("b") \n\
+	Ctrl<Key>Right:		string(0x1b) string("f") \n\
+\
+	:Meta<Key>a:		string("ä") \n\
+	:Meta<Key>o:		string("ö") \n\
+	:Meta<Key>u:		string("ü") \n\
+	:Meta<Key>A:		string("Ä") \n\
+	:Meta<Key>O:		string("Ö") \n\
+	:Meta<Key>U:		string("Ü") \n\
+	:Meta<Key>s:		string("ß") \n\
+	:Meta<Key>comma:	string("«") \n\
+	:Meta<Key>period:	string("»") \n\
+	:Meta<Key>slash:	string("ø") \n\
+	:Meta<Key>m:		string("µ") \n\
+	:Meta<Key>c:		string("©") \n\
+	:Meta<Key>L:		string("£") \n\
+ \
+	None<Key>F10:		set-vt-font(1) \n\
+	None<Key>F11:		set-vt-font(d) \n\
+ \
+	<FocusIn>:		\n\
+	<FocusOut>:		\n\
+ \
+	None<Key>Prior:		scroll-back(1,page) \n\
+	None<Key>Next:		scroll-forw(1,page) \n\
+	Meta<Key>Prior:		scroll-back(1) \n\
+	Meta<Key>Next:		scroll-forw(1) \n\
+	Shift<Key>Prior:	scroll-back(3) \n\
+	Shift<Key>Next:		scroll-forw(3) \n\
+ \
+ \
+	<Key>F2:	string("an email address") \n\
+	<Key>F3:	string("slogin -l faw ") \n\
+	<Key>F4:	string("test -x /amd/bin/bash && exec /amd/bin/bash \
+|| test -x /bin/bash && exec /bin/bash \
+|| test -x /usr/local/bin/bash && exec /usr/local/bin/bash -login \
+|| test -x /com/bin/bash && exec /com/bin/bash \
+|| echo 'no bash';") string(0x0d)\n\
+	None<Key>F9:	string("TOP_INCLUDES = -I/usr/openwin/include") \n\
+	Meta<Btn1Down>: string("Button1") string(0x0d) \n\
+
+
+

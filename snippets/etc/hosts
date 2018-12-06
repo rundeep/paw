@@ -1,0 +1,25 @@
+#
+# /etc/hosts: static lookup table for host names
+#
+
+#<ip-address>	<hostname.domain.org>	<hostname>
+127.0.0.1	localhost.localdomain	localhost
+::1		localhost.localdomain	localhost
+127.0.0.1	vaio.localdomain	vaio
+127.0.0.84 	xml.cisco.com
+
+192.168.100.100 pigi                                                                                                                                  
+192.168.100.99  stary                                                                                                                               
+192.168.100.98  america                                                                                                                               
+192.168.100.97  tanchick                                                                                                                              
+192.168.100.95  africa                                                                                                                                
+192.168.100.93  andrew
+
+192.168.1.32	w3sokorenko
+192.168.1.31	brick
+192.168.1.7	eve-ng
+
+192.168.115.162 vsmon.xbank.com.ua          vsmon
+192.168.115.192 vssms.xbank.com.ua          vssms
+
+# End of file
