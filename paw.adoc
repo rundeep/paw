@@ -407,6 +407,7 @@ include::snippets/home/bob/.ncmpcpp/config[]
 [subs=+quotes]
 // The "quotes" substitution enables inline formatting.
 ----
+$ sudo pacman -S iw
 $ sudo iw dev
 $ sudo ip link set __wlp2s0__ up
 $ sudo wpa_supplicant -B -i __wlp2s0__ -c /etc/wpa_supplicant/wifi.conf
