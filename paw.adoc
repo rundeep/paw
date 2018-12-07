@@ -750,6 +750,30 @@ include::snippets/home/bob/.tmuxpwline[]
 ----
 +++ </div></details> +++
 
+.Start tmux on every shell login
+----
+$ vim ~/.bashrc
+
+# TMUX block {{{
+if [[ $DISPLAY ]]; then
+    # If not running interactively, do not do anything
+    [[ $- != *i* ]] && return
+    [[ -z "$TMUX" ]] && exec tmux
+fi
+
+if which tmux >/dev/null 2>&1; then
+    # if no session is started, start a new session
+    test -z ${TMUX} && tmux
+
+    # when quitting tmux, try to attach
+    while test -z ${TMUX}; do
+        tmux attach || break
+    done
+fi
+# }}}
+----
+
+
 == Services
 === TFTP
 .Install
@@ -871,7 +895,22 @@ $ *git commit -m "initial commit"*
 [master (root commit) cb0de4c] initial commit
  1 file changed, 662 insertions(+)
   create mode 100644 paw.adoc
+Use the git status command to see which files git knows exist
+$ *git status*
 ----
+
+==== Create a new branch
+
+  $ git checkout -b <my branch name>
+
+This command will automatically create a new branch and then 'check you out' on it,
+meaning git will move you to that branch, off of the master branch.
+
+Confirm that your branch was created:
+
+  $ git branch
+
+To move between branches, use `git checkout <branch name>` without `-b`
 
 === Usage `echo` with `sudo`
   $ echo -e "<config>\n</config>" | sudo tee /etc/vmware/hostd/proxy.xml
