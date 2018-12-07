@@ -876,6 +876,8 @@ All logs from current boot
   $ journalctl -b
 
 === GIT Source control system
+https://product.hubspot.com/blog/git-and-github-tutorial-for-beginners
+
 [TIP]
 ====
 If you work in Linux with `dos` files, you have to add global parameter
@@ -911,6 +913,26 @@ Confirm that your branch was created:
   $ git branch
 
 To move between branches, use `git checkout <branch name>` without `-b`
+
+==== Create a new repository on GitHub and push existing local repo on it
+
+  $ git remote add origin https://github.com/rundeep/paw.git 
+
+==== Push a branch to GitHub
+Switch to a new branch localy and push changes onto a new branch on GitHub:
+
+  $ git checkout <branch name>
+  $ git push origin <branch name>
+
+==== Create a Pull Request (PR) & Merge a PR
+Use web browser.
+ 
+==== Get changes on GitHub back to a computer 
+NOTE: If required, use `git checkout master` command to switch branches back to the
+master branch.
+
+  $ git pull origin master
+  $ git log
 
 === Usage `echo` with `sudo`
   $ echo -e "<config>\n</config>" | sudo tee /etc/vmware/hostd/proxy.xml
