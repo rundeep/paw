@@ -916,7 +916,7 @@ To move between branches, use `git checkout <branch name>` without `-b`
 
 ==== Create a new repository on GitHub and push existing local repo on it
 
-  $ git remote add origin https://github.com/rundeep/paw.git 
+  $ git remote add origin https://github.com/rundeep/paw.git
 
 ==== Push a branch to GitHub
 Switch to a new branch localy and push changes onto a new branch on GitHub:
@@ -926,8 +926,8 @@ Switch to a new branch localy and push changes onto a new branch on GitHub:
 
 ==== Create a Pull Request (PR) & Merge a PR
 Use web browser.
- 
-==== Get changes on GitHub back to a computer 
+
+==== Get changes on GitHub back to a computer
 NOTE: If required, use `git checkout master` command to switch branches back to the
 master branch.
 
@@ -982,3 +982,8 @@ $ sudo *cu* -l /dev/ttyUSB0 -s 9600 2>&1 | tee cisco.log
 `~#` - send __Ctrl+Break__
 
 `!.`&crarr; - terminate the conversation
+
+=== Windows 10: even partition size calculation
+
+  ((64/128/256) * 1024) + 565
+  565 MB = (450 + 99 + 16) MB
