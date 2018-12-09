@@ -9,6 +9,7 @@ Version 0.1, 30.10.2018
 :experimental:
 :description: Digital version of Pink & White COPYBOOK
 :keywords: Arch Linux
+:icons: font
 :imagesdir: ./img
 :stylesdir: ./stylesheets
 //:stylesheet: rubygems.css
@@ -17,7 +18,7 @@ Version 0.1, 30.10.2018
 :show-link-uri:
 
 This is a digital copy of a handwritten notebook.
-Useful for keeping notes about exact solutions
+Useful for keeping notes about exact solutions,
 for quick system installation and configuration.
 
 IMPORTANT: For more detailed instructions, see the ArchWiki
@@ -403,6 +404,9 @@ include::snippets/home/bob/.ncmpcpp/config[]
   # ip link set dev enp3s0 address 18:67:b0:25:a3:dd
 
 ==== Wireless (dhcp, static IP)
+  # lspci -k
+  WiFi: Atheros AR9285
+
 .Activate the interface
 [subs=+quotes]
 // The "quotes" substitution enables inline formatting.
@@ -474,7 +478,33 @@ Hardware buttons to toggle wireless cards are handled by a vendor specific kerne
 # ip link show wlp2s0       # verify that the interface is up
 ----
 
+.Example WIFI configuration
+----
+$ sudo iw dev wlp2s0 scan | less
+   ...
+   SSID: Nipple
+    RSN: Ver: 1
+         Group cipher: CCMP
+         Pairwise cipher: CCMP
+         Authentication suites:PSK
+  ...
+
+$ cat /etc/wpa_supplicant/nipple.conf
+  network = {
+            ssid="Nipple"
+            scan_ssid=1
+            proto=RSN
+            key_mgmt=WPA-PSK
+            pairwise=CCMP
+            group=CCMP
+            psk="abrakadabra"
+            }
+----
+
 ==== Wired (network profile)
+
+  # lspci -k
+  Eth: Marvel Yukon 88E8059
 
 .Network manager
 NOTE: `netctl` is part of the `base` group, so it should already be installed on your system.
@@ -539,6 +569,18 @@ include::snippets/etc/netctl/tuntap[]
 ==== Loopback
 
   # ip addr add 192.168.99.99/24 broadcast 192.168.99.255 dev lo
+
+=== USB auto mount
+
+  # pacman -Sy udevil exfat-utils ntfs-3g
+  # ls -la /media
+  # chown root:root /usr/bin/udevil
+  # chmod u+s,go-s,ugo+x /usr/bin/udevil
+
+[subs=+quotes]
+----
+# systemctl start/enable devmon@__bob__
+----
 
 === Input devices
 ==== Keyboard layouts
@@ -658,7 +700,11 @@ include::snippets/home/bob/.gtkrc-2.0.mine[]
   $ sudo pacman -S qt4
   $ qtconfig -qt4
 
-TIP: Set interface stile `GTK+` (it makes better appearence for `Keepassx`)
+[TIP]
+====
+For some applications it is better to set interface
+stile `GTK+` (i.e. it makes better appearence for `Keepassx`)
+====
 
 === Console improvements
 ==== Bash command-line shell
@@ -679,6 +725,10 @@ TIP: Set interface stile `GTK+` (it makes better appearence for `Keepassx`)
 ----
 
 ==== Colored output
+"`Какие же вы все убогие, красноглазые!
+Одна радость в жизни - разукрашивать допотопное говно в разные цвета.`"
+
+
 Colored `ls`, `diff`, `grep`, etc.
 
   # pacman -S colordiff
@@ -775,6 +825,76 @@ fi
 
 
 == Services
+=== Share
+
+  # pacman -S cifs-utils
+
+.Mount Windows share:
+[subs=+quotes]
+----
+$ sudo mount.cifs //192.168.100.97/d$ -o uid=1000,gid=1000,username=__bob__ /mnt/
+----
+
+.Mount Nix share:
+[subs=+quotes]
+----
+**CLIENT SIDE**
+# pacman -S sshfs
+
+$ cat /etc/fuse.conf
+  user_allow_other
+
+$ sudo mkdir -p /mnt/__america__
+$ sudo chmod -R 777 /mnt/__america__
+
+$ sshfs -o IdentityFile=/home/dextop/.ssh/id_rsa root@america:/media/sdb1 /mnt/america/sdb1 -C -o allow_other
+----
+
+To unmount the remote system:
+
+  $ fusermount3 -u /mnt/america
+
+=== Samba
+
+https://obihoernchen.net/877/setup-samba-4-on-arch-linux/[Obihörnchen's Blog: Setup Samba 4 on Arch Linux]
+
+    # pacman -Sy samba
+    # systemctl enable smbd nmbd
+    # groupadd samba
+
+To use user __tazik__ for samba shares:
+[subs=+quotes]
+----
+# useradd -m -g samba -s /sbin/nologin __tazik__
+# pdbedit -a -u __tazik__
+----
+
++++ <details><summary> +++
+*[+]Example* `/etc/samba/smb.conf` from archive
++++ </summary><div> +++
+[source,bash]
+----
+include::snippets/etc/samba/smb.conf[]
+----
++++ </div></details> +++
+
+    # systemctl start smbd nmbd
+
+Create directory on server open for everyone.
+It allows upload files available for all clients, because
+the files belong to the group defined of its directory
+and not the group of its owner.
+
+.Keep **the group of a directory** for files using the `sgid`(set group ID) bit on:
+
+  # chmod 2777 /media/tmp
+
+Set attributs for files and directories:
+
+    # find . -type d -exec chmod g-s {} +
+    # find . -type f -exec chmod 0644 {} +
+    # chown -R tazik:samba *
+
 === TFTP
 .Install
   # pacman -S atftp
@@ -864,19 +984,162 @@ $ systemctl --user start/enable rt.service
 
   Ctrl-a d
 
-=== HTTP server
-==== WebDAV
+=== WebDAV
+
+.First of all install Apache HTTP Server
+----
+# pacman -S apache
+# systemctl start/enable httpd.service
+----
+
+Edit server's configuration file:
+
+----
+# vim /etc/httpd/conf/httpd.conf
+
+    ServerAdmin user@gmail.com
+    ServerSignature Off
+    ServerTokens Prod
+----
+...uncomment:
+----
+    LoadModule dav_module modules/mod_dav.so
+    LoadModule dav_fs_module modules/mod_dav_fs.so
+    LoadModule dav_lock_module modules/mod_dav_lock.so
+    LoadModule auth_digest_module modules/mod_auth_digest.so
+----
+...add:
+----
+DAVLockDB /home/httpd/DAV/DAVLock
+
+Alias /dav "/home/httpd/html/dav"
+----
+
+Restart HTTPD server:
+
+    # systemctl restart httpd.service
+
+.Prepare directory for WebDAV content:
+----
+# mkdir -p /home/httpd/DAV
+# mkdir -p /home/httpd/html/dav
+# chown -R http:http /home/httpd/
+----
+
+Create password for __some_dav_user__:
+
+    # htdigest -c /etc/httpd/conf/ password WebDAV some_dav_user
+
+DAV directory config:
+----
+# vim /etc/httpd/conf/httpd.conf
+    ...
+    <Directory "/home/httpd/html/dav">
+      DAV On
+      AllowOverride None
+      Options Indexes FollowSymLinks
+      AuthType Digest
+      AuthName "WebDAV"
+      AuthUserFile /etc/httpd/conf/passwd
+      Require user some_dav_user
+    </Directory>
+    ...
+----
+
+.Binding for WebDAV
+----
+# vim /etc/fstab
+
+    # Binding for WebDAV
+    /media/sdb1/LearnWare/     /home/httpd/html/dav/learnware/ none bind 0 0
+    /media/sdc1/video/tv/      /home/httpd/html/dav/tv/        none bind 0 0
+    /media/sdb1/install/       /home/httpd/html/dav/install/   none bind 0 0
+    /media/sdb1/library/       /home/httpd/html/dav/library/   none bind 0 0
+    /media/sdd1/video/cinema/  /home/httpd/html/dav/cinema/    none bind 0 0
+----
 
 === SNMPd
 
-== Appendix
-=== LOG
-All logs from current boot
+    # pacman -S net-snmp
 
-  $ journalctl -b
+CAUTION: in the begining use `enable`, not `start` service
+
+    # systemctl enable snmpd
+
+==== SNMP3
+
+.SERVER SIDE
+----
+# mkdir /etc/snmp
+$ echo rouser bob | sudo tee /etc/snmp/snmpd.conf
+
+# mkdir -p /var/net-snmp
+$ echo createUser bob SHA hiNubook AES hiMonitoring | sudo tee /var/net-snmp/snmpd.conf
+
+# systemctl start snmpd
+----
+
+.CLIENT SIDE
+----
+$ pacman -Fs snmpwalk
+$ snmpwalk -v 3 -u bob -a SHA -A hiNubook -x AES -X hiMonitoring -l authNoPriv america | less
+----
+
+==== SNMP2c
+
+.SERVER SIDE
+----
+# mkdir /etc/snmp
+
+$ echo rocommunity hiNubook | sudo tee /etc/snmp/snmpd.conf
+
+# systemctl start snmpd
+----
+
+.CLIENT SIDE
+----
+$ snmpwalk -v 2c -c hiNubook america | less
+----
+
+== Appendix
+=== VIM
+
+  # pacman -S vim
+
+Set up Vundle:
+
+    $ git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+
+.Optionally
+[NOTE]
+====
+Install pretty monospace font for programming:
+
+    $ yaourt -S ttf-inconsolata-lgc-for-powerline
+
+    $ cat ~/.Xresources.d/fonts
+
+----
+! FONT Using Xft
+*font                   : xft:Inconsolata LGC for Powerline:style=Medium:pixelsize=14
+*italicFont             : xft:Inconsolata LGC for Powerline:style=Italic:pixelsize=14
+*bolditalicFont         : xft:Inconsolata LGC for Powerline:style=Bold-Italic:pixelsize=14
+*boldFont               : xft:Inconsolata LGC for Powerline:style=Bold:pixelsize=14
+*letterSpace            : -1
+----
+====
+
++++ <details><summary> +++
+*[+]Example* of `~/.vimrc` configuration file
++++ </summary><div> +++
+----
+include::snippets/home/bob/.vimrc[]
+----
++++ </div></details> +++
 
 === GIT Source control system
-https://product.hubspot.com/blog/git-and-github-tutorial-for-beginners
+https://product.hubspot.com/blog/git-and-github-tutorial-for-beginners[Meghan
+Nelson's Blog: An Intro to Git and GitHub for Beginners]
 
 [TIP]
 ====
@@ -934,6 +1197,21 @@ master branch.
   $ git pull origin master
   $ git log
 
+==== Exclude some files from beeng staged
+
+Add files to:
+
+    vim .git/info/exclude
+
+IMPORTANT: the best part is that you don’t commit anything in the `.git/`
+directory, so it’s like your own personal `.gitignore` that no one else can see or
+touch!
+
+=== LOG
+All logs from current boot
+
+  $ journalctl -b
+
 === Usage `echo` with `sudo`
   $ echo -e "<config>\n</config>" | sudo tee /etc/vmware/hostd/proxy.xml
 
@@ -982,6 +1260,19 @@ $ sudo *cu* -l /dev/ttyUSB0 -s 9600 2>&1 | tee cisco.log
 `~#` - send __Ctrl+Break__
 
 `!.`&crarr; - terminate the conversation
+
+=== Windows 10: change network connection category
+
+.Powershell
+----
+> Get-NetConnectionProfile
+> Set-NetConnectionProfile -Name "Ethernet" -NetworkCategory Private
+----
+.Local Security Policy
+
+  > secpol.msc
+
+menu:Select|[Local Security Policy > Network List Manager Policies > Unidentified Networks > Location type:] `Private`
 
 === Windows 10: even partition size calculation
 
