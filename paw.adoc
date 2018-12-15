@@ -1137,6 +1137,41 @@ include::snippets/home/bob/.vimrc[]
 ----
 +++ </div></details> +++
 
+==== Modeline: Embed vim settings in file
+http://vim.wikia.com/wiki/Modeline_magic[Vim Tips Wiki about Modeline magic]
+
+Check current settings:
+
+  :verbose set modeline? modelines?
+
+----
+  modeline
+        Last set from ~/.vimrc
+  modelines=5
+----
+It means that within the first 5 or last 5 lines by default you cat add something like that:
+
+  # vim: ts=2 sw=2 et
+
+==== VIM spell check
+https://www.linux.com/learn/using-spell-checking-vim[Using spell checking in vim]
+
+turn spell checking on only in the local buffer
+
+  :setlocal spell spelllang=en_us
+
+`]s` command will move the cursor to the next misspelled word
+
+`[s` command will move the cursor back through the buffer to previous misspelled words
+
+`zg` command and Vim will add the word to its dictionary
+
+----
+.vimrc:
+
+set spell spelllang=en_us
+----
+
 === GIT Source control system
 https://product.hubspot.com/blog/git-and-github-tutorial-for-beginners[Meghan
 Nelson's Blog: An Intro to Git and GitHub for Beginners]
