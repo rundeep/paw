@@ -1217,7 +1217,7 @@ To move between branches, use `git checkout <branch name>` without `-b`
   $ git remote add origin https://github.com/rundeep/paw.git
 
 ==== Push a branch to GitHub
-Switch to a new branch localy and push changes onto a new branch on GitHub:
+Switch to a new branch locally and push changes onto a new branch on GitHub:
 
   $ git checkout <branch name>
   $ git push origin <branch name>
@@ -1232,7 +1232,15 @@ master branch.
   $ git pull origin master
   $ git log
 
-==== Exclude some files from beeng staged
+==== Compare a local git branch with its remote branch
+
+These commands are going to answer the question "what my push will do to the remote
+repo?"
+
+  $ git fetch origin master
+  $ git diff master origin/master
+
+==== Exclude some files from being staged
 
 Add files to:
 
