@@ -17,6 +17,8 @@ Version 0.1, 30.10.2018
 // rouge coderay highlightjs prettify pigments
 :show-link-uri:
 
+Small test
+
 This is a digital copy of a handwritten notebook.
 Useful for keeping notes about exact solutions,
 for quick system installation and configuration.
