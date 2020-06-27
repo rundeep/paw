@@ -1,4 +1,4 @@
-= 5 Arch Linux notebook: Minimal Installation Guide
+= Arch Linux notebook: Minimal Installation Guide
 Bob McColly(c) 2018 Heart of Diamond GmbH
 Version 0.1, 30.10.2018
 // Set Attributes
